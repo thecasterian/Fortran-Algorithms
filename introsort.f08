@@ -1,5 +1,6 @@
 module introsort_mod
     implicit none
+    ! If the length of array <= INSERTION_LIMIT, use insertion sort
     integer, parameter :: INSERTION_LIMIT = 16
 
     public :: introsort
@@ -10,17 +11,16 @@ contains
 
     subroutine introsort(a, n, cmp)
     ! The main subroutine of introsort
-    ! a : an array to be sorted
-    ! n : length of a
-    ! cmp : the function that recieves two elements of a
-    !       and return whether the first is "less than"
-    !       the second
+    ! a : the array to be sorted
+    ! n : the length of a
+    ! cmp : the function that recieves two elements of a and return whether
+    !       the first is "less than" the second
         implicit none
-        integer, dimension(:), target, intent(inout) :: a
+        real, dimension(:), target, intent(inout) :: a
         integer, intent(in) :: n
         logical, external :: cmp
 
-        integer, dimension(:), pointer :: ptr_a
+        real, dimension(:), pointer :: ptr_a
         integer :: tmp, max_level
 
         tmp = n / 2
@@ -37,12 +37,12 @@ contains
 
     recursive subroutine introsort_helper(a, n, level, cmp)
         implicit none
-        integer, dimension(:), pointer, intent(in) :: a
+        real, dimension(:), pointer, intent(in) :: a
         integer, intent(in) :: n, level
         logical, external :: cmp
 
         integer :: q
-        integer, dimension(:), pointer :: a_right
+        real, dimension(:), pointer :: a_right
 
         if (n <= INSERTION_LIMIT) then
             call insertion_sort(a, n, cmp)
@@ -62,12 +62,12 @@ contains
 
     subroutine insertion_sort(a, n, cmp)
         implicit none
-        integer, dimension(:), pointer, intent(in) :: a
+        real, dimension(:), pointer, intent(in) :: a
         integer, intent(in) :: n
         logical, external :: cmp
 
         integer :: i, j
-        integer :: tmp
+        real :: tmp
 
         do i = 2, n
             tmp = a(i)
@@ -83,12 +83,12 @@ contains
 
     subroutine heapsort(a, n, cmp)
         implicit none
-        integer, dimension(:), pointer, intent(in) :: a
+        real, dimension(:), pointer, intent(in) :: a
         integer, value :: n
         logical, external :: cmp
 
         integer :: i
-        integer :: tmp
+        real :: tmp
 
         do i = n/2, 1, -1
             call max_heapify(a, n, i, cmp)
@@ -105,12 +105,12 @@ contains
 
     integer function partition(a, n, cmp)
         implicit none
-        integer, dimension(:), pointer, intent(in) :: a
+        real, dimension(:), pointer, intent(in) :: a
         integer, intent(in) :: n
         logical, external :: cmp
 
         integer :: i, j
-        integer :: x, f, m, l, tmp
+        real :: x, f, m, l, tmp
 
         ! median of three
         f = a(1)
@@ -148,12 +148,13 @@ contains
 
     subroutine max_heapify(a, n, i, cmp)
         implicit none
-        integer, dimension(:), pointer, intent(in) :: a
+        real, dimension(:), pointer, intent(in) :: a
         integer, intent(in) :: n
         integer, value :: i
         logical, external :: cmp
 
-        integer :: l, tmp
+        integer :: l
+        real :: tmp
 
         do while (2*i <= n)
             l = i
@@ -175,7 +176,7 @@ program test
     use introsort_mod
 
     implicit none
-    integer, dimension(1000000) :: a
+    real, dimension(1000000) :: a
     integer :: n, i
     logical, external :: cmp
 
@@ -187,7 +188,7 @@ program test
     call introsort(a, n, cmp)
 
     do i = 1, n
-        write(*, '(i0)') a(i)
+        write(*, *) a(i)
     end do
 
 end program test
@@ -195,7 +196,7 @@ end program test
 logical function cmp(a, b)
 ! Using this cmp function, the array is sorted in decreasing order
     implicit none
-    integer, intent(in) :: a, b
+    real, intent(in) :: a, b
 
     cmp = a > b
 
