@@ -37,7 +37,8 @@ contains
     end function new_pq
 
     subroutine push(self, a)
-    ! Push a into the priority queue
+    ! Push an element into the priority queue
+    ! a : an element to be pushed
         implicit none
         class(priority_queue), intent(inout) :: self
         integer, intent(in) :: a
