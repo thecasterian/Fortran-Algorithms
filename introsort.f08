@@ -1,5 +1,6 @@
 module introsort_mod
     implicit none
+    ! If the length of array <= INSERTION_LIMIT, do insertion sort
     integer, parameter :: INSERTION_LIMIT = 16
 
     public :: introsort
@@ -23,6 +24,7 @@ contains
         integer, dimension(:), pointer :: ptr_a
         integer :: tmp, max_level
 
+        ! max_level = 2 * floor(log2(n))
         tmp = n / 2
         max_level = 0
         do while (tmp > 0)
