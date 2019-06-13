@@ -1,5 +1,7 @@
 module priority_queue_mod
     implicit none
+    ! Default v_size
+    integer, parameter :: DEFAULT_SIZE = 16
 
     type priority_queue
     private
@@ -17,21 +19,25 @@ module priority_queue_mod
     end type priority_queue
 
     interface priority_queue
-        module procedure new_pq
+        module procedure :: new_pq
     end interface priority_queue
+
+    private :: DEFAULT_SIZE
 
 contains
 
     type(priority_queue) function new_pq()
+    ! Default constructor for priority queue
         implicit none
 
         new_pq%n = 0
-        new_pq%v_size = 16
-        allocate(new_pq%v(16))
+        new_pq%v_size = DEFAULT_SIZE
+        allocate(new_pq%v(DEFAULT_SIZE))
 
     end function new_pq
 
     subroutine push(self, a)
+    ! Push a into the priority queue
         implicit none
         class(priority_queue), intent(inout) :: self
         integer, intent(in) :: a
@@ -58,6 +64,7 @@ contains
     end subroutine push
 
     integer function top(self)
+    ! Get the maximum element of priotiry queue
         implicit none
         class(priority_queue), intent(in) :: self
 
@@ -70,6 +77,7 @@ contains
     end function top
 
     subroutine pop(self)
+    ! Pop the maximum element of priority queue
         implicit none
         class(priority_queue), intent(inout) :: self
 
@@ -117,6 +125,7 @@ contains
 end module priority_queue_mod
 
 program test
+! A simple program to test the priority queue
     use priority_queue_mod
 
     implicit none
