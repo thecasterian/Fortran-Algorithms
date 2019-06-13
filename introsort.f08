@@ -72,7 +72,8 @@ contains
         do i = 2, n
             tmp = a(i)
             j = i - 1
-            do while (j >= 1 .and. cmp(tmp, a(j)))
+            do while (j >= 1)
+                if (.not. cmp(tmp, a(j))) exit
                 a(j+1) = a(j)
                 j = j - 1
             end do
@@ -158,7 +159,9 @@ contains
         do while (2*i <= n)
             l = i
             if (cmp(a(i), a(2*i))) l = 2*i
-            if (2*i+1 <= n .and. cmp(a(l), a(2*i+1))) l = 2*i+1
+            if (2*i+1 <= n) then
+                if (cmp(a(l), a(2*i+1))) l = 2*i+1
+            end if
             if (l == i) exit
             tmp = a(i)
             a(i) = a(l)
