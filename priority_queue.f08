@@ -3,11 +3,18 @@ module priority_queue_mod
     ! Default v_size
     integer, parameter :: DEFAULT_SIZE = 16
 
+    abstract interface
+        logical function cmp_func(a, b)
+            integer, intent(in) :: a, b
+        end function
+    end interface
+
     type priority_queue
     private
         integer :: n
         integer :: v_size
         integer, dimension(:), pointer :: v
+        procedure(cmp_func), pointer, nopass :: cmp_ptr
     
     contains
 
@@ -15,6 +22,7 @@ module priority_queue_mod
         procedure :: top
         procedure :: pop
         procedure, private :: doubling
+        final :: del_pq
 
     end type priority_queue
 
@@ -23,16 +31,21 @@ module priority_queue_mod
     end interface priority_queue
 
     private :: DEFAULT_SIZE
+    private :: cmp_default
 
 contains
 
-    type(priority_queue) function new_pq()
+    type(priority_queue) function new_pq(cmp_ptr)
     ! Default constructor for priority queue
         implicit none
+        procedure(cmp_func), pointer, optional :: cmp_ptr
 
         new_pq%n = 0
         new_pq%v_size = DEFAULT_SIZE
         allocate(new_pq%v(DEFAULT_SIZE))
+
+        new_pq%cmp_ptr => cmp_default
+        if (present(cmp_ptr)) new_pq%cmp_ptr => cmp_ptr
 
     end function new_pq
 
@@ -55,7 +68,7 @@ contains
         i = self%n
         do
             if (i == 1) exit
-            if (self%v(i/2) >= self%v(i)) exit
+            if (.not. self%cmp_ptr(self%v(i/2), self%v(i))) exit
             tmp = self%v(i/2)
             self%v(i/2) = self%v(i)
             self%v(i) = tmp
@@ -93,9 +106,9 @@ contains
         i = 1
         do while (2*i <= self%n)
             l = i
-            if (self%v(2*i) > self%v(i)) l = 2*i
+            if (self%cmp_ptr(self%v(i), self%v(2*i))) l = 2*i
             if (2*i+1 <= self%n) then
-                if (self%v(2*i+1) > self%v(l)) l = 2*i+1
+                if (self%cmp_ptr(self%v(l), self%v(2*i+1))) l = 2*i+1
             end if
             if (l == i) exit
             tmp = self%v(i)
@@ -109,7 +122,6 @@ contains
     subroutine doubling(self)
         implicit none
         class(priority_queue), intent(inout) :: self
-
         integer, dimension(:), pointer :: new_v
         integer :: i
 
@@ -120,8 +132,24 @@ contains
         deallocate(self%v)
         self%v_size = self%v_size * 2
         self%v = new_v
-    
+
     end subroutine doubling
+
+    subroutine del_pq(self)
+        implicit none
+        type(priority_queue), intent(inout) :: self
+
+        if (associated(self%v)) deallocate(self%v)
+
+    end subroutine del_pq
+
+    logical function cmp_default(a, b)
+        implicit none
+        integer, intent(in) :: a, b
+
+        cmp_default = a < b
+
+    end function cmp_default
 
 end module priority_queue_mod
 
@@ -131,10 +159,14 @@ program test
 
     implicit none
     type(priority_queue) :: pq
+    procedure(cmp_func), pointer :: cmp_ptr
+    logical, external :: cmp
+
     integer, dimension(10) :: a = [5, 10, 3, 1, 4, 6, 8, 7, 9, 2]
     integer :: i
 
-    pq = priority_queue()
+    cmp_ptr => cmp
+    pq = priority_queue(cmp_ptr)
     
     do i = 1, 10
         call pq%push(a(i))
@@ -146,3 +178,12 @@ program test
     end do
 
 end program test
+
+logical function cmp(a, b)
+! Using this cmp function, the minimum element has maximum priority
+    implicit none
+    integer, intent(in) :: a, b
+
+    cmp = a > b
+
+end function cmp
