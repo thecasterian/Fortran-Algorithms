@@ -14,9 +14,8 @@ module bst_mod
 
     end type bst_node
 
-    type(bst_node), target :: NIL
-
     type bst
+    private
         integer :: size
         type(bst_node), pointer :: root
         type(bst_node), pointer :: node_min, node_max
@@ -25,15 +24,25 @@ module bst_mod
 
         procedure :: insert
         procedure :: search
-        procedure :: remove
+        generic :: remove => remove_iterator, remove_integer
+
+        procedure, private :: remove_iterator, remove_integer
 
     end type bst
+
+    type bst_iterator
+        type(bst_node), pointer :: ptr
+
+    end type bst_iterator
 
     interface bst
         module procedure new_bst
     end interface bst
 
+    type(bst_node), target :: NIL
+
     private :: bst_node
+    private :: new_bst
 
 contains
 
@@ -48,25 +57,48 @@ contains
 
     end function new_bst
 
-    function predecessor(self)
+    function insert(self, a)
         implicit none
-        class(bst_node), pointer :: predecessor
-        class(bst_node), target, intent(inout) :: self
+        type(bst_iterator) :: insert
+        class(bst), intent(inout) :: self
+        integer, intent(in) :: a
 
-        type(bst_node), pointer :: cur
+    end function insert
 
-        cur => self
-        if (associated(cur, NIL)) predecessor => NIL
-
-    end function predecessor
-
-    function successor(self)
+    function search(self, a)
         implicit none
-        class(bst_node), pointer :: successor
-        class(bst_node), intent(inout) :: self
+        type(bst_iterator) :: search
+        class(bst), intent(inout) :: self
+        integer, intent(in) :: a
+    
+    end function search
 
-        successor => self%left
-        
-    end function successor
+    function remove_iterator(self, it)
+        implicit none
+        type(bst_iterator) :: remove_iterator
+        class(bst), intent(inout) :: self
+        class(bst_iterator), intent(in) :: it
+
+    end function remove_iterator
+
+    function remove_integer(self, a)
+        implicit none
+        type(bst_iterator) :: remove_integer
+        class(bst), intent(inout) :: self
+        integer, intent(in) :: a
+
+    end function remove_integer
 
 end module bst_mod
+
+program test
+    use bst_mod
+
+    implicit none
+    type(bst) :: tree
+    type(bst_iterator) :: it
+
+    tree = bst()
+    it = tree%insert(5)
+
+end program test
